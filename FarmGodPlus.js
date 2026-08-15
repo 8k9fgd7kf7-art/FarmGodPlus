@@ -1,4 +1,4 @@
-// FarmGod+ v2.5.2 – GitHub / Schnellleisten build
+// FarmGod+ v2.5.3 – GitHub / Schnellleisten build
 (function (__FGW) {
   'use strict';
   if (!__FGW || !__FGW.game_data || !__FGW.jQuery) {
@@ -2889,7 +2889,7 @@ window.FarmGod.Main = (function (Library, Translation) {
         @media(max-width:700px){.fg-grid,.fg-common-grid{grid-template-columns:1fr}.fg-profile-row{grid-template-columns:1fr 1fr}.fg-profile-row .btn{width:100%}}
       </style>
       <div class="fg-wrap">
-        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.2</div></div>
+        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.3</div></div>
         <div class="fg-body optionsContent">
           <div class="fgIntegratedStatus">${fgBuildIntegratedStatusHtml()}</div>
           ${fgWarnings.length
@@ -3540,6 +3540,7 @@ window.FarmGod.Main = (function (Library, Translation) {
       '.fgBottleneckNumber span{display:block;font-size:8px;color:#806c50;}' +
       '.fgBottleneckReserve{margin-top:7px;padding:7px 8px;background:#edf3df;border:1px solid #b7c68d;font-size:9px;color:#4d612b;}' +
       '.fgBottleneckHint{margin-top:6px;font-size:9px;color:#705635;line-height:1.35;}' +
+      '@media(max-width:800px){.fgActionWrap{gap:6px;justify-content:flex-start;}.farmGod_icon{transform:scale(1.08);transform-origin:center;}.fgSkip{min-height:30px;}.fgNextBadge{font-size:8px;}.fgTableWrap{padding-left:4px;padding-right:4px;}}' +
       '</style>';
 
     html += '<div class="vis farmGodContent">';
@@ -4728,15 +4729,49 @@ window.FarmGod.Main = (function (Library, Translation) {
     return finalPlan;
   };
 
-  const selectFarmRow = function ($row) {
+  const fgIsMobileQuickMode = function () {
+    try {
+      return (
+        (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+        window.innerWidth <= 800 ||
+        $('#mobileHeader').length > 0
+      );
+    } catch (e) {
+      return window.innerWidth <= 800;
+    }
+  };
+
+  const selectFarmRow = function ($row, shouldScroll) {
     $('.farmRow').removeClass('fgNextAttack');
     $('.fgNextBadge').remove();
     if (!$row || !$row.length) return;
     $row.addClass('fgNextAttack');
     const $action = $row.find('.fgActionWrap').first();
     if ($action.length) $action.prepend('<span class="fgNextBadge">NÄCHSTER</span>');
+
+    if (shouldScroll === false) return;
+
     const el = $row.get(0);
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (el && el.scrollIntoView) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  };
+
+  const fgAlignNextMobileAction = function ($row, desiredTop) {
+    if (!fgIsMobileQuickMode() || !$row || !$row.length) return;
+
+    requestAnimationFrame(function () {
+      const $action = $row.find('.farmGod_icon, .fgUnifiedPrepare, .fgUnifiedMarkWallSent').first();
+      const el = $action.get(0) || $row.get(0);
+      if (!el || !el.getBoundingClientRect) return;
+
+      const currentTop = el.getBoundingClientRect().top;
+      const delta = currentTop - desiredTop;
+
+      if (Math.abs(delta) > 1) {
+        window.scrollBy(0, delta);
+      }
+    });
   };
 
   const getSelectedFarmRow = function () {
@@ -4801,12 +4836,30 @@ window.FarmGod.Main = (function (Library, Translation) {
             $pb.data('max')
           );
           const $row = $this.closest('.farmRow');
+          const mobileQuick = fgIsMobileQuickMode();
+          const tappedTop = ($this.get(0) && $this.get(0).getBoundingClientRect)
+            ? $this.get(0).getBoundingClientRect().top
+            : 0;
+          let $nextRow = $row.nextAll('.farmRow').not('.fgPlanDone').first();
+
           fgUpdateFarmPlanItemStatus(String($row.data('plan-signature') || ''), 'sent');
           const wasSelected = $row.hasClass('fgNextAttack');
+
+          if (!$nextRow.length) {
+            $nextRow = $('.farmRow').not('.fgPlanDone').not($row).first();
+          }
+
           $row.remove();
           updateRemainingCounter();
           updateFarmGodPlusProgressText();
-          if (wasSelected || !$('.farmRow.fgNextAttack').length) selectFarmRow($('.farmRow').not('.fgPlanDone').first());
+
+          if ($nextRow.length) {
+            selectFarmRow($nextRow, !mobileQuick);
+            if (mobileQuick) fgAlignNextMobileAction($nextRow, tappedTop);
+          } else if (wasSelected || !$('.farmRow.fgNextAttack').length) {
+            selectFarmRow($('.farmRow').not('.fgPlanDone').first(), !mobileQuick);
+          }
+
           farmBusy = false;
         },
         function (r) {
@@ -4818,12 +4871,30 @@ window.FarmGod.Main = (function (Library, Translation) {
             $pb.data('max')
           );
           const $row = $this.closest('.farmRow');
+          const mobileQuick = fgIsMobileQuickMode();
+          const tappedTop = ($this.get(0) && $this.get(0).getBoundingClientRect)
+            ? $this.get(0).getBoundingClientRect().top
+            : 0;
+          let $nextRow = $row.nextAll('.farmRow').not('.fgPlanDone').first();
+
           fgUpdateFarmPlanItemStatus(String($row.data('plan-signature') || ''), 'failed');
           const wasSelected = $row.hasClass('fgNextAttack');
+
+          if (!$nextRow.length) {
+            $nextRow = $('.farmRow').not('.fgPlanDone').not($row).first();
+          }
+
           $row.remove();
           updateRemainingCounter();
           updateFarmGodPlusProgressText();
-          if (wasSelected || !$('.farmRow.fgNextAttack').length) selectFarmRow($('.farmRow').not('.fgPlanDone').first());
+
+          if ($nextRow.length) {
+            selectFarmRow($nextRow, !mobileQuick);
+            if (mobileQuick) fgAlignNextMobileAction($nextRow, tappedTop);
+          } else if (wasSelected || !$('.farmRow.fgNextAttack').length) {
+            selectFarmRow($('.farmRow').not('.fgPlanDone').first(), !mobileQuick);
+          }
+
           farmBusy = false;
         }
       );
