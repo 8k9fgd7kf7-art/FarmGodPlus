@@ -1,4 +1,4 @@
-// FarmGod+ v2.5.1 – GitHub / Schnellleisten build
+// FarmGod+ v2.5.2 – GitHub / Schnellleisten build
 (function (__FGW) {
   'use strict';
   if (!__FGW || !__FGW.game_data || !__FGW.jQuery) {
@@ -16,14 +16,11 @@
   const Timing = __FGW.Timing;
   const Accountmanager = __FGW.Accountmanager;
 
-  // Schnellleisten-Version: FarmGod+ startet nur im Farm-Assistenten.
-  // Auf anderen Seiten wird NICHT weitergeleitet.
+  // Schnellleisten-Version: Auf falschen Seiten automatisch
+  // in den Farm-Assistenten wechseln.
   if (game_data.screen !== 'am_farm') {
-    if (UI && typeof UI.ErrorMessage === 'function') {
-      UI.ErrorMessage('FarmGod+ bitte im Farm-Assistenten starten.');
-    } else {
-      alert('FarmGod+ bitte im Farm-Assistenten starten.');
-    }
+    const farmUrl = game_data.link_base_pure + 'am_farm';
+    window.location.href = farmUrl;
     return;
   }
 
@@ -2892,7 +2889,7 @@ window.FarmGod.Main = (function (Library, Translation) {
         @media(max-width:700px){.fg-grid,.fg-common-grid{grid-template-columns:1fr}.fg-profile-row{grid-template-columns:1fr 1fr}.fg-profile-row .btn{width:100%}}
       </style>
       <div class="fg-wrap">
-        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.1</div></div>
+        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.2</div></div>
         <div class="fg-body optionsContent">
           <div class="fgIntegratedStatus">${fgBuildIntegratedStatusHtml()}</div>
           ${fgWarnings.length
