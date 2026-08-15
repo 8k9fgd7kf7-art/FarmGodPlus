@@ -1,4 +1,4 @@
-// FarmGod+ v2.5.4 – GitHub / Schnellleisten build
+// FarmGod+ v2.5.5 – GitHub / Schnellleisten build
 (function (__FGW) {
   'use strict';
   if (!__FGW || !__FGW.game_data || !__FGW.jQuery) {
@@ -2489,18 +2489,9 @@ window.FarmGod.Main = (function (Library, Translation) {
       });
 
     $('.farmGod_icon')
-      .off('touchend.farmGod')
-      .on('touchend.farmGod', function (event) {
-        if (event) event.preventDefault();
-      });
-
-    $('.farmGod_icon')
       .off('click')
       .on('click', function (event) {
-        if (event) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
+        if (event) event.preventDefault();
 
         if (
           game_data.market != 'nl' ||
@@ -2902,7 +2893,7 @@ window.FarmGod.Main = (function (Library, Translation) {
         @media(max-width:700px){.fg-grid,.fg-common-grid{grid-template-columns:1fr}.fg-profile-row{grid-template-columns:1fr 1fr}.fg-profile-row .btn{width:100%}}
       </style>
       <div class="fg-wrap">
-        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.4</div></div>
+        <div class="fg-head"><div class="fg-title">FarmGod+</div><div class="fg-version">v2.5.5</div></div>
         <div class="fg-body optionsContent">
           <div class="fgIntegratedStatus">${fgBuildIntegratedStatusHtml()}</div>
           ${fgWarnings.length
